@@ -1,0 +1,261 @@
+USE sugar;
+SELECT 
+        con_p_connections_plan.id,
+    con_p_connections_plan.name AS 'Название',
+    con_p_connections_plan.description AS 'Описание',
+    DATE_ADD(con_p_connections_plan.date_entered,
+        INTERVAL + 3 HOUR) AS 'Дата ввода',
+    DATE_ADD(con_p_connections_plan.date_modified,
+        INTERVAL + 3 HOUR) AS 'Дата последнего изменения',
+    GET_USER(con_p_connections_plan.created_by) AS 'Кем создано',
+    GET_USER(con_p_connections_plan.modified_user_id) AS 'Редактирование',
+    GET_USER(con_p_connections_plan.assigned_user_id) AS 'Ответсвенный',
+    con_p_connections_plan_cstm.address_plan_c AS 'Адрес',
+    con_p_connections_plan_cstm.date_connection_c AS 'Дата подключения',
+    con_p_connections_plan_cstm.time_connection_c AS 'Время подключения',
+    DATE_ADD(con_p_connections_plan_cstm.start_time_c,
+        INTERVAL + 3 HOUR) AS 'Начало работ',
+    DATE_ADD(con_p_connections_plan_cstm.end_time_c,
+        INTERVAL + 3 HOUR) AS 'Окончание работ',
+    con_p_connections_plan_cstm.contacts_c AS 'Котнакт',
+    GET_ACCOUNT(con_p_connections_plan_cstm.account_id_c) AS 'ФИО',
+    con_p_connections_plan_cstm.number_opp_c AS 'Номер договора',
+    con_p_connections_plan_cstm.tariff_plan_c AS 'Тариф',
+    GET_CHECK_BOX(con_p_connections_plan_cstm.issued_hard_c) AS 'Оборудование выдано',
+    REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE
+                (cat_work_type_tech_data_c, '^ao^', 'АО'), '^bs^', 'БС'), '^rrl^', 'РРЛ'), '^switch^', 'Коммутатор'),
+                '^router^', 'Роутер'), '^wi_fi^', 'Wi-Fi роутер'), '^tv^', 'ТВ Приставка'), ',', ', ') AS 'Тех данные "Категория работ"',
+    GET_USER(con_p_connections_plan_cstm.user_id_c) AS 'Оборудование подготовил',
+    con_p_connections_plan_cstm.base_station_c AS 'Базовая станция',
+    con_p_connections_plan_cstm.level_signal_c AS 'Уровень сигнала',
+    GET_CON_P_CONNECTION_PLAN_FIELD_NAME(con_p_connections_plan_cstm.type_conn_c) AS 'Тип подключения',
+    con_p_connections_plan_cstm.type_hard_c AS 'Тип оборудования',
+    GET_CHECK_BOX(con_p_connections_plan_cstm.radio_c) AS 'Нужна радиоточка',
+    con_p_connections_plan_cstm.point_address_c AS 'Адрес точки',
+    con_p_connections_plan_cstm.ip_address_c AS 'IP Адрес',
+    GET_CON_P_CONNECTION_PLAN_FIELD_NAME(con_p_connections_plan_cstm.brigada_c) AS 'Бригада',
+    GET_RA_SURVEY_NAME(con_p_connections_plan_cstm.ra_survey_id_c) AS 'Осмотр',
+    con_p_connections_plan_cstm.comment_mount_c AS 'Коментарий к монатажу',
+    GET_CHECK_BOX(con_p_connections_plan_cstm.check_mount_c) AS 'Работа выполнена',
+    GET_CHECK_BOX(con_p_connections_plan_cstm.call_pl_c) AS 'Проверено инжененром',
+    con_p_connections_plan_cstm.call_date_c AS 'Дата проверки инженером',
+    con_p_connections_plan_cstm.call_comment_c AS 'Проверка клиента инженером - комментарий',
+    GET_USER(con_p_connections_plan_cstm.user_id3_c) AS 'Состав бригады 1',
+    GET_USER(con_p_connections_plan_cstm.user_id4_c) AS 'Состав бригады 2',
+    con_p_connections_plan_cstm.job_list_c AS 'Описание работ',
+    GET_CON_P_CONNECTION_PLAN_FIELD_NAME(con_p_connections_plan_cstm.cat_work_c) AS 'Категория работ',
+    con_p_connections_plan_cstm.remarks_c AS 'Замечания к работе',
+    GET_ACC_REQUISITION_NAME(con_p_connections_plan_cstm.acc_requisition_id_c) AS 'Согласование доступа',
+    case
+                when con_p_connections_plan_cstm.status_mount_c = '1' then 'Заявка'
+                when con_p_connections_plan_cstm.status_mount_c = '2' then 'Выполнена'
+                when con_p_connections_plan_cstm.status_mount_c = '3' then 'Перенесено на другой день'
+                when con_p_connections_plan_cstm.status_mount_c = '4' then 'Отклонена'
+                when con_p_connections_plan_cstm.status_mount_c = '5' then 'Не выполнена'
+        end AS 'Статус работы',
+    con_p_connections_plan_cstm.channel_speed_c AS 'Канальная скорость',
+    GET_USER(con_p_connections_plan_audit.created_by) AS 'Кем создана правка',
+    DATE_ADD(con_p_connections_plan_audit.date_created,
+        INTERVAL + 3 HOUR) AS 'Дата правки',
+    GET_CON_P_CONNECTION_PLAN_FIELD_NAME(con_p_connections_plan_audit.field_name) AS 'Название поля',
+    CONCAT_WS('',
+    case 
+#Бригада    
+                when con_p_connections_plan_audit.before_value_string = 'one' and con_p_connections_plan_audit.field_name ='brigada_c' then 'Первая'
+                when con_p_connections_plan_audit.before_value_string = 'two' and con_p_connections_plan_audit.field_name ='brigada_c' then 'Вторая'
+                when con_p_connections_plan_audit.before_value_string = 'three' and con_p_connections_plan_audit.field_name ='brigada_c' then 'Третья'
+#Чекбокс с радиоточкой          
+                when con_p_connections_plan_audit.before_value_string ='1' and con_p_connections_plan_audit.field_name ='radio_c' then 'Да'
+                when con_p_connections_plan_audit.before_value_string ='0' and con_p_connections_plan_audit.field_name ='radio_c' then 'Нет'
+#Чекбокс с выданным оборудованием
+                when con_p_connections_plan_audit.before_value_string ='1' and con_p_connections_plan_audit.field_name ='issued_hard_c' then 'Да'
+                when con_p_connections_plan_audit.before_value_string ='0' and con_p_connections_plan_audit.field_name ='issued_hard_c' then 'Нет'
+#Чекбокс проверки инженером
+                when con_p_connections_plan_audit.before_value_string ='1' and con_p_connections_plan_audit.field_name ='call_pl_c' then 'Да'
+                when con_p_connections_plan_audit.before_value_string ='0' and con_p_connections_plan_audit.field_name ='call_pl_c' then 'Нет'
+#Чекбокс работа выполнена
+                when con_p_connections_plan_audit.before_value_string ='1' and con_p_connections_plan_audit.field_name ='check_mount_c' then 'Да'
+                when con_p_connections_plan_audit.before_value_string ='0' and con_p_connections_plan_audit.field_name ='check_mount_c' then 'Нет'
+#Статус монтажа        
+                when con_p_connections_plan_audit.before_value_string ='1' and con_p_connections_plan_audit.field_name ='status_mount_c' then 'Заявка'
+                when con_p_connections_plan_audit.before_value_string ='2' and con_p_connections_plan_audit.field_name ='status_mount_c' then 'Выполнена'
+                when con_p_connections_plan_audit.before_value_string ='3' and con_p_connections_plan_audit.field_name ='status_mount_c' then 'Перенесено на другой день'
+                when con_p_connections_plan_audit.before_value_string ='4' and con_p_connections_plan_audit.field_name ='status_mount_c' then 'Отклонена'
+                when con_p_connections_plan_audit.before_value_string ='5' and con_p_connections_plan_audit.field_name ='status_mount_c' then 'Не выполнена'
+#Категории работ
+                WHEN con_p_connections_plan_audit.before_value_string = '1' and con_p_connections_plan_audit.field_name ='cat_work_c' THEN 'Юридическое лицо'
+                WHEN con_p_connections_plan_audit.before_value_string = '22' and con_p_connections_plan_audit.field_name ='cat_work_c' THEN 'Юридическое лицо, организация сети'
+                WHEN con_p_connections_plan_audit.before_value_string = '2' and con_p_connections_plan_audit.field_name ='cat_work_c' THEN 'Физическое лицо, оптика, домашние сети'
+                WHEN con_p_connections_plan_audit.before_value_string = '3' and con_p_connections_plan_audit.field_name ='cat_work_c' THEN 'Коттедж'
+                WHEN con_p_connections_plan_audit.before_value_string = '4' and con_p_connections_plan_audit.field_name ='cat_work_c' THEN 'Перенос точки с перемонтированием кабеля'
+                WHEN con_p_connections_plan_audit.before_value_string = '5' and con_p_connections_plan_audit.field_name ='cat_work_c' THEN 'Переворот, замена точки'
+                WHEN con_p_connections_plan_audit.before_value_string = '6' and con_p_connections_plan_audit.field_name ='cat_work_c' THEN 'Установка точки, домашняя сеть, офисный центр (РТ, ящик, подвод питания)'
+                WHEN con_p_connections_plan_audit.before_value_string = '7' and con_p_connections_plan_audit.field_name ='cat_work_c' THEN 'Ремонт'
+                WHEN con_p_connections_plan_audit.before_value_string = '23' and con_p_connections_plan_audit.field_name ='cat_work_c' THEN 'Юстировка'
+                WHEN con_p_connections_plan_audit.before_value_string = '24' and con_p_connections_plan_audit.field_name ='cat_work_c' THEN 'Демонтаж'
+                WHEN con_p_connections_plan_audit.before_value_string = '8' and con_p_connections_plan_audit.field_name ='cat_work_c' THEN 'Работы не требующие квалификации и др.'
+                WHEN con_p_connections_plan_audit.before_value_string = '9' and con_p_connections_plan_audit.field_name ='cat_work_c' THEN 'Доставка груза'
+                WHEN con_p_connections_plan_audit.before_value_string = '10' and con_p_connections_plan_audit.field_name ='cat_work_c' THEN 'Транспортные услуги'
+                WHEN con_p_connections_plan_audit.before_value_string = '11' and con_p_connections_plan_audit.field_name ='cat_work_c' THEN 'Установка базового шкафа с подводом питания'
+                WHEN con_p_connections_plan_audit.before_value_string = '12' and con_p_connections_plan_audit.field_name ='cat_work_c' THEN 'Установка базы, релейки'
+                WHEN con_p_connections_plan_audit.before_value_string = '14' and con_p_connections_plan_audit.field_name ='cat_work_c' THEN 'Осмотр'
+                WHEN con_p_connections_plan_audit.before_value_string = '15' and con_p_connections_plan_audit.field_name ='cat_work_c' THEN 'Прокладка кабеля между зданиями (воздушка)'
+                WHEN con_p_connections_plan_audit.before_value_string = '18' and con_p_connections_plan_audit.field_name ='cat_work_c' THEN 'Работы по акту'
+                WHEN con_p_connections_plan_audit.before_value_string = '19' and con_p_connections_plan_audit.field_name ='cat_work_c' THEN 'Работы на башне РТПЦ'
+                WHEN con_p_connections_plan_audit.before_value_string = '20' and con_p_connections_plan_audit.field_name ='cat_work_c' THEN 'Квалифицированная работа'
+                WHEN con_p_connections_plan_audit.before_value_string = '25' and con_p_connections_plan_audit.field_name ='cat_work_c' THEN 'Установка прибора учета электроэнергиии на БС'
+#Реплейсы для Категории работ - результат монтажа    
+                WHEN con_p_connections_plan_audit.field_name='cat_work_result_montage_c' 
+                                THEN REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(
+                                        REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(
+                                        REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(
+                                        REPLACE(REPLACE(REPLACE(REPLACE(con_p_connections_plan_audit.before_value_string, '^conection_fl_cottage^','Подключение ФЛ (Коттедж)'), 
+                                        '^connection_fl_house^', 'Подключение ФЛ (многоквартирный дом)'),
+                                        '^connection_ul^', 'Подключение ЮЛ'),
+                                        '^connection_ul_offices^', 'Подключение ЮЛ (офисный центр)'),
+                                        '^ul^', 'Ремонт ЮЛ'),
+                                        '^fl^', 'Ремонт ФЛ'),
+                                        '^adjustment_as^', 'Юстировка АС'),
+                                        '^adjustment_bs^', 'Юстировка БС'),
+                                        '^adjustment_rrl^', 'Юстировка РРЛ'),
+                                        '^replacement_bs^', 'Замена БС'),
+                                        '^replacement_rrl^', 'Замена РРЛ'),
+                                        '^rebuild_switch^', 'Перенастройка коммутатора'),
+                                        '^rebuild_router^', 'Перенастройка маршрутизатора'),
+                                        '^rebuild_as^', 'Перенастройка АС'),
+                                        '^rebuild_bs^', 'Перенастройка БС'),
+                                        '^rebuild_rrl^', 'Перенастройка РРЛ'),
+                                        '^install_bs^', 'Установка БС'),
+                                        '^install_rrl^', 'Установка РРЛ'),
+                                        '^install_switch^', 'Установка коммутатора'),
+                                        '^replacement_switch^','Замена коммутатора'),
+                                        '^searching_defect^', 'Выявление неисправности'),
+                                        '^survey^', 'Осмотр'),
+                                        '^remoute_rebuild_wi_fi^', 'Удаленная перенастройка wi-fi роутера'),
+                                        ',', ', ')
+#Реплейсы для категорий работ тех данные
+                WHEN con_p_connections_plan_audit.field_name='cat_work_type_tech_data_c' 
+                                THEN REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE
+                                        (con_p_connections_plan_audit.before_value_string, '^ao^', 'АО'), '^bs^', 'БС'), '^rrl^', 'РРЛ'), '^switch^', 'Коммутатор'),
+                                        '^router^', 'Роутер'), '^wi_fi^', 'Wi-Fi роутер'), '^tv^', 'ТВ Приставка'), ',', ', ')
+        else con_p_connections_plan_audit.before_value_string
+        end, con_p_connections_plan_audit.before_value_text) AS 'Старое значение',
+#для проверки
+#       concat_ws('', con_p_connections_plan_audit.before_value_string, con_p_connections_plan_audit.before_value_text) AS 'Старое значение',
+    CONCAT_WS('',
+    case
+#Бригада    
+                when con_p_connections_plan_audit.after_value_string = 'one' and con_p_connections_plan_audit.field_name ='brigada_c' then 'Первая'
+                when con_p_connections_plan_audit.after_value_string = 'two' and con_p_connections_plan_audit.field_name ='brigada_c' then 'Вторая'
+                when con_p_connections_plan_audit.after_value_string = 'three' and con_p_connections_plan_audit.field_name ='brigada_c' then 'Третья'
+#Чекбокс с радиоточкой          
+                when con_p_connections_plan_audit.after_value_string ='1' and con_p_connections_plan_audit.field_name ='radio_c' then 'Да'
+                when con_p_connections_plan_audit.after_value_string ='0' and con_p_connections_plan_audit.field_name ='radio_c' then 'Нет'
+#Чекбокс с выданным оборудованием
+                when con_p_connections_plan_audit.after_value_string ='1' and con_p_connections_plan_audit.field_name ='issued_hard_c' then 'Да'
+                when con_p_connections_plan_audit.after_value_string ='0' and con_p_connections_plan_audit.field_name ='issued_hard_c' then 'Нет'
+#Чекбокс проверки инженером
+                when con_p_connections_plan_audit.after_value_string ='1' and con_p_connections_plan_audit.field_name ='call_pl_c' then 'Да'
+                when con_p_connections_plan_audit.after_value_string ='0' and con_p_connections_plan_audit.field_name ='call_pl_c' then 'Нет'
+#Чекбокс работа выполнена
+                when con_p_connections_plan_audit.after_value_string ='1' and con_p_connections_plan_audit.field_name ='check_mount_c' then 'Да'
+                when con_p_connections_plan_audit.after_value_string ='0' and con_p_connections_plan_audit.field_name ='check_mount_c' then 'Нет'
+#Статус монтажа        
+                when con_p_connections_plan_audit.after_value_string ='1' and con_p_connections_plan_audit.field_name ='status_mount_c' then 'Заявка'
+                when con_p_connections_plan_audit.after_value_string ='2' and con_p_connections_plan_audit.field_name ='status_mount_c' then 'Выполнена'
+                when con_p_connections_plan_audit.after_value_string ='3' and con_p_connections_plan_audit.field_name ='status_mount_c' then 'Перенесено на другой день'
+                when con_p_connections_plan_audit.after_value_string ='4' and con_p_connections_plan_audit.field_name ='status_mount_c' then 'Отклонена'
+                when con_p_connections_plan_audit.after_value_string ='5' and con_p_connections_plan_audit.field_name ='status_mount_c' then 'Не выполнена'
+#Категории работ
+                WHEN con_p_connections_plan_audit.after_value_string = '1' and con_p_connections_plan_audit.field_name ='cat_work_c' THEN 'Юридическое лицо'
+                WHEN con_p_connections_plan_audit.after_value_string = '22' and con_p_connections_plan_audit.field_name ='cat_work_c' THEN 'Юридическое лицо, организация сети'
+                WHEN con_p_connections_plan_audit.after_value_string = '2' and con_p_connections_plan_audit.field_name ='cat_work_c' THEN 'Физическое лицо, оптика, домашние сети'
+                WHEN con_p_connections_plan_audit.after_value_string = '3' and con_p_connections_plan_audit.field_name ='cat_work_c' THEN 'Коттедж'
+                WHEN con_p_connections_plan_audit.after_value_string = '4' and con_p_connections_plan_audit.field_name ='cat_work_c' THEN 'Перенос точки с перемонтированием кабеля'
+                WHEN con_p_connections_plan_audit.after_value_string = '5' and con_p_connections_plan_audit.field_name ='cat_work_c' THEN 'Переворот, замена точки'
+                WHEN con_p_connections_plan_audit.after_value_string = '6' and con_p_connections_plan_audit.field_name ='cat_work_c' THEN 'Установка точки, домашняя сеть, офисный центр (РТ, ящик, подвод питания)'
+                WHEN con_p_connections_plan_audit.after_value_string = '7' and con_p_connections_plan_audit.field_name ='cat_work_c' THEN 'Ремонт'
+                WHEN con_p_connections_plan_audit.after_value_string = '23' and con_p_connections_plan_audit.field_name ='cat_work_c' THEN 'Юстировка'
+                WHEN con_p_connections_plan_audit.after_value_string = '24' and con_p_connections_plan_audit.field_name ='cat_work_c' THEN 'Демонтаж'
+                WHEN con_p_connections_plan_audit.after_value_string = '8' and con_p_connections_plan_audit.field_name ='cat_work_c' THEN 'Работы не требующие квалификации и др.'
+                WHEN con_p_connections_plan_audit.after_value_string = '9' and con_p_connections_plan_audit.field_name ='cat_work_c' THEN 'Доставка груза'
+                WHEN con_p_connections_plan_audit.after_value_string = '10' and con_p_connections_plan_audit.field_name ='cat_work_c' THEN 'Транспортные услуги'
+                WHEN con_p_connections_plan_audit.after_value_string = '11' and con_p_connections_plan_audit.field_name ='cat_work_c' THEN 'Установка базового шкафа с подводом питания'
+                WHEN con_p_connections_plan_audit.after_value_string = '12' and con_p_connections_plan_audit.field_name ='cat_work_c' THEN 'Установка базы, релейки'
+                WHEN con_p_connections_plan_audit.after_value_string = '14' and con_p_connections_plan_audit.field_name ='cat_work_c' THEN 'Осмотр'
+                WHEN con_p_connections_plan_audit.after_value_string = '15' and con_p_connections_plan_audit.field_name ='cat_work_c' THEN 'Прокладка кабеля между зданиями (воздушка)'
+                WHEN con_p_connections_plan_audit.after_value_string = '18' and con_p_connections_plan_audit.field_name ='cat_work_c' THEN 'Работы по акту'
+                WHEN con_p_connections_plan_audit.after_value_string = '19' and con_p_connections_plan_audit.field_name ='cat_work_c' THEN 'Работы на башне РТПЦ'
+                WHEN con_p_connections_plan_audit.after_value_string = '20' and con_p_connections_plan_audit.field_name ='cat_work_c' THEN 'Квалифицированная работа'
+                WHEN con_p_connections_plan_audit.after_value_string = '25' and con_p_connections_plan_audit.field_name ='cat_work_c' THEN 'Установка прибора учета электроэнергиии на БС'
+#Реплейсы для Категории работ - результат монтажа    
+                WHEN con_p_connections_plan_audit.field_name='cat_work_result_montage_c' 
+                                THEN REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(
+                                        REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(
+                                        REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(
+                                        REPLACE(REPLACE(REPLACE(REPLACE(con_p_connections_plan_audit.after_value_string, '^conection_fl_cottage^','Подключение ФЛ (Коттедж)'), 
+                                        '^connection_fl_house^', 'Подключение ФЛ (многоквартирный дом)'),
+                                        '^connection_ul^', 'Подключение ЮЛ'),
+                                        '^connection_ul_offices^', 'Подключение ЮЛ (офисный центр)'),
+                                        '^ul^', 'Ремонт ЮЛ'),
+                                        '^fl^', 'Ремонт ФЛ'),
+                                        '^adjustment_as^', 'Юстировка АС'),
+                                        '^adjustment_bs^', 'Юстировка БС'),
+                                        '^adjustment_rrl^', 'Юстировка РРЛ'),
+                                        '^replacement_bs^', 'Замена БС'),
+                                        '^replacement_rrl^', 'Замена РРЛ'),
+                                        '^rebuild_switch^', 'Перенастройка коммутатора'),
+                                        '^rebuild_router^', 'Перенастройка маршрутизатора'),
+                                        '^rebuild_as^', 'Перенастройка АС'),
+                                        '^rebuild_bs^', 'Перенастройка БС'),
+                                        '^rebuild_rrl^', 'Перенастройка РРЛ'),
+                                        '^install_bs^', 'Установка БС'),
+                                        '^install_rrl^', 'Установка РРЛ'),
+                                        '^install_switch^', 'Установка коммутатора'),
+                                        '^replacement_switch^','Замена коммутатора'),
+                                        '^searching_defect^', 'Выявление неисправности'),
+                                        '^survey^', 'Осмотр'),
+                                        '^remoute_rebuild_wi_fi^', 'Удаленная перенастройка wi-fi роутера'),
+                                        ',', ', ')
+#Рейплейсы для категорий работ тех данные
+                WHEN con_p_connections_plan_audit.field_name='cat_work_type_tech_data_c' 
+                                THEN REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE
+                                        (con_p_connections_plan_audit.after_value_string, '^ao^', 'АО'), '^bs^', 'БС'), '^rrl^', 'РРЛ'), '^switch^', 'Коммутатор'),
+                                        '^router^', 'Роутер'), '^wi_fi^', 'Wi-Fi роутер'), '^tv^', 'ТВ Приставка'), ',', ', ')
+        else con_p_connections_plan_audit.after_value_string
+        end, con_p_connections_plan_audit.after_value_text) AS 'Новое значение',
+#для проверки
+#       concat_ws('', con_p_connections_plan_audit.after_value_text, con_p_connections_plan_audit.after_value_string) AS 'Новое значение',
+        get_user(con_p_connections_plan_cstm.user_id6_c) AS 'Курировал работы',
+    REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(
+    REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(
+    REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(
+    REPLACE(REPLACE(REPLACE(REPLACE(cat_work_result_montage_c, '^conection_fl_cottage^','Подключение ФЛ (Коттедж)'), 
+    '^connection_fl_house^', 'Подключение ФЛ (многоквартирный дом)'),
+    '^connection_ul^', 'Подключение ЮЛ'),
+    '^connection_ul_offices^', 'Подключение ЮЛ (офисный центр)'),
+    '^ul^', 'Ремонт ЮЛ'),
+    '^fl^', 'Ремонт ФЛ'),
+    '^adjustment_as^', 'Юстировка АС'),
+    '^adjustment_bs^', 'Юстировка БС'),
+    '^adjustment_rrl^', 'Юстировка РРЛ'),
+    '^replacement_bs^', 'Замена БС'),
+    '^replacement_rrl^', 'Замена РРЛ'),
+    '^rebuild_switch^', 'Перенастройка коммутатора'),
+    '^rebuild_router^', 'Перенастройка маршрутизатора'),
+    '^rebuild_as^', 'Перенастройка АС'),
+    '^rebuild_bs^', 'Перенастройка БС'),
+    '^rebuild_rrl^', 'Перенастройка РРЛ'),
+    '^install_bs^', 'Установка БС'),
+    '^install_rrl^', 'Установка РРЛ'),
+    '^install_switch^', 'Установка коммутатора'),
+    '^replacement_switch^','Замена коммутатора'),
+    '^searching_defect^', 'Выявление неисправности'),
+    '^survey^', 'Осмотр'),
+    '^remoute_rebuild_wi_fi^', 'Удаленная перенастройка wi-fi роутера'),
+    ',', ', ') as 'Категория работ - результат монтажа' 
+FROM
+    con_p_connections_plan
+        JOIN con_p_connections_plan_cstm ON con_p_connections_plan.id=con_p_connections_plan_cstm.id_c
+    AND con_p_connections_plan_cstm.date_connection_c >= '2020-02-01' AND con_p_connections_plan.deleted='0'
+        LEFT JOIN con_p_connections_plan_audit ON con_p_connections_plan.id = con_p_connections_plan_audit.parent_id;
