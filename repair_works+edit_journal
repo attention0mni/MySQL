@@ -1,0 +1,207 @@
+USE sugar;
+SELECT 
+    rep_repairs.id,
+    rep_repairs.name AS 'Задание',
+    DATE_ADD(rep_repairs.date_entered,
+        INTERVAL + 3 HOUR) AS 'Дата создания',
+    DATE_ADD(rep_repairs.date_modified,
+        INTERVAL + 3 HOUR) AS 'Дата последнего редактирования',
+    GET_USER(rep_repairs.modified_user_id) AS 'Редактирование',
+    GET_USER(rep_repairs.created_by) AS 'Кем создано',
+    rep_repairs.description AS 'Описание',
+    GET_USER(rep_repairs.assigned_user_id) AS 'Ответсвенный',
+    GET_USER(rep_repairs_cstm.user_id_c) AS 'Состав бригады 1',
+    GET_USER(rep_repairs_cstm.user_id1_c) AS 'Состав бригады 2',
+    GET_USER(rep_repairs_cstm.user_id2_c) AS 'Принял работы',
+    rep_repairs_cstm.date_of_completion_c AS 'Дата выполнения',
+    GET_ACCOUNT(rep_repairs_cstm.account_id_c) AS 'ФИО/Организация/Объект',
+    rep_repairs_cstm.address_c AS 'Адрес',
+    GET_CHECK_BOX(rep_repairs_cstm.check_ovm_c) 'Работы от ОМ',
+    rep_repairs_cstm.contacts_c 'Контакты',
+    rep_repairs_cstm.time_c AS 'Время ремонта',
+    CASE
+        WHEN rep_repairs_cstm.status_c = 'one' THEN 'Заявка'
+        WHEN rep_repairs_cstm.status_c = 'two' THEN 'Принята к исполнению'
+        WHEN rep_repairs_cstm.status_c = 'three' THEN 'Отложено'
+        WHEN rep_repairs_cstm.status_c = 'four' THEN 'Выполнена'
+        WHEN rep_repairs_cstm.status_c = 'five' THEN 'Отменена'
+    END AS 'Статус работы',
+    rep_repairs_cstm.comment_c AS 'Коментарий ремонтника',
+    REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE
+    (REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE
+    (REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(rep_repairs_cstm.new_cat_work_c, '^1^', 'Юридическое лицо'),
+       '^22^', 'Юридическое лицо, организация сети'),
+       '^2^', 'Физическое лицо, оптика, домашние сети'),
+       '^3^', 'Коттедж'),
+       '^4^', 'Перенос точки с перемонтированием кабеля'),
+       '^5^', 'Переворот, замена точки'),
+       '^6^', 'Установка точки, домашняя сеть, офисный центр (РТ, ящик, подвод питания)'),
+       '^7^', 'Ремонт'),
+       '^23^', 'Юстировка'),
+       '^24^', 'Демонтаж'),
+       '^8^', 'Работы не требующие квалификации и др.'),
+       '^9^', 'Доставка груза'),
+       '^10^', 'Транспортные услуги'),
+       '^11^', 'Установка базового шкафа с подводом питания'),
+       '^12^', 'Установка базы, релейки'),
+       '^14^', 'Осмотр'),
+       '^15^', 'Прокладка кабеля между зданиями (воздушка)'),
+       '^18^', 'Работы по акту'),
+       '^19^', 'Работа на башне РТПЦ'),
+       '^20^', 'Квалифицированная работа'),
+       '^25^', 'Установка прибора учета электроэнергиии на БС'),
+       ',', ', ') AS 'Категория работ',
+    bugs.bug_number 'Номер тикета',
+    DATE_ADD(rep_repairs_audit.date_created,
+        INTERVAL + 3 HOUR) AS 'Дата правки',
+    GET_USER(rep_repairs_audit.created_by) AS 'Кем создана правка',
+    CASE
+        WHEN rep_repairs_audit.field_name = 'brigade1_c' THEN 'Состав бригады 1'
+        WHEN rep_repairs_audit.field_name = 'brigade2_c' THEN 'Состав бригады 2'
+        WHEN rep_repairs_audit.field_name = 'contacts_c' THEN 'Контакты'
+        WHEN rep_repairs_audit.field_name = 'description' THEN 'Выполнено'
+        WHEN rep_repairs_audit.field_name = 'contacts_c' THEN 'Контакты'
+        WHEN rep_repairs_audit.field_name = 'status_c' THEN 'Статус работы'
+        WHEN rep_repairs_audit.field_name = 'contacts_c' THEN 'Контакты'
+        WHEN rep_repairs_audit.field_name = 'time_c' THEN 'Время ремонта'
+        WHEN rep_repairs_audit.field_name = 'contacts_c' THEN 'Контакты'
+        WHEN rep_repairs_audit.field_name = 'comment_c' THEN 'Комментарий ремонтника'
+        WHEN rep_repairs_audit.field_name = 'accept_user_c' THEN 'Принял работы'
+        WHEN rep_repairs_audit.field_name = 'prepared_equipment_c' THEN 'Тип подготовленного оборудования'
+        WHEN rep_repairs_audit.field_name = 'accepting_work_repairs_c' THEN 'Тип работ по принятию ремонта'
+    END AS 'Название поля',
+    CONCAT_WS('',
+            CASE
+                WHEN rep_repairs_audit.before_value_string = 'one' AND rep_repairs_audit.field_name = 'status_c' THEN 'Заявка'
+                WHEN rep_repairs_audit.before_value_string = 'two' AND rep_repairs_audit.field_name = 'status_c' THEN 'Принята к исполнению'
+                WHEN rep_repairs_audit.before_value_string = 'three' AND rep_repairs_audit.field_name = 'status_c' THEN 'Отложено'
+                WHEN rep_repairs_audit.before_value_string = 'four' AND rep_repairs_audit.field_name = 'status_c' THEN 'Выполнена'
+                WHEN rep_repairs_audit.before_value_string = 'five' AND rep_repairs_audit.field_name = 'status_c' THEN 'Отменена'
+#Реплейсы для типа подготовительных работ
+                                WHEN rep_repairs_audit.field_name = 'prepared_equipment_c' THEN
+                                        REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE
+                                        (rep_repairs_audit.before_value_string, '^ao^', 'АО'), '^bs^', 'БС'), '^rrl^', 'РРЛ'), '^switch^', 'Коммутатор'),
+                                        '^router^', 'Роутер'), '^wi_fi^', 'Wi-Fi роутер'), '^tv^', 'ТВ Приставка'), ',', ', ')
+#Реплейсы для типа курирования работ
+                                WHEN rep_repairs_audit.field_name = 'accepting_work_repairs_c' THEN
+                                        REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(
+                                        REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(
+                                        REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(
+                                        REPLACE(REPLACE(REPLACE(REPLACE(rep_repairs_audit.before_value_string, '^conection_fl_cottage^','Подключение ФЛ (Коттедж)'), 
+                                        '^connection_fl_house^', 'Подключение ФЛ (многоквартирный дом)'),
+                                        '^connection_ul^', 'Подключение ЮЛ'),
+                                        '^connection_ul_offices^', 'Подключение ЮЛ (офисный центр)'),
+                                        '^ul^', 'Ремонт ЮЛ'),
+                                        '^fl^', 'Ремонт ФЛ'),
+                                        '^adjustment_as^', 'Юстировка АС'),
+                                        '^adjustment_bs^', 'Юстировка БС'),
+                                        '^adjustment_rrl^', 'Юстировка РРЛ'),
+                                        '^replacement_bs^', 'Замена БС'),
+                                        '^replacement_rrl^', 'Замена РРЛ'),
+                                        '^rebuild_switch^', 'Перенастройка коммутатора'),
+                                        '^rebuild_router^', 'Перенастройка маршрутизатора'),
+                                        '^rebuild_as^', 'Перенастройка АС'),
+                                        '^rebuild_bs^', 'Перенастройка БС'),
+                                        '^rebuild_rrl^', 'Перенастройка РРЛ'),
+                                        '^install_bs^', 'Установка БС'),
+                                        '^install_rrl^', 'Установка РРЛ'),
+                                        '^install_switch^', 'Установка коммутатора'),
+                                        '^replacement_switch^','Замена коммутатора'),
+                                        '^searching_defect^', 'Выявление неисправности'),
+                                        '^survey^', 'Осмотр'),
+                                        '^remoute_rebuild_wi_fi^', 'Удаленная перенастройка wi-fi роутера'),
+                                        ',', ', ')
+                ELSE rep_repairs_audit.before_value_string
+            END,
+            rep_repairs_audit.before_value_text) AS 'Старое значение',
+    CONCAT_WS('',
+            CASE
+                WHEN rep_repairs_audit.after_value_string = 'one' AND rep_repairs_audit.field_name = 'status_c' THEN 'Заявка'
+                WHEN rep_repairs_audit.after_value_string = 'two' AND rep_repairs_audit.field_name = 'status_c' THEN 'Принята к исполнению'
+                WHEN rep_repairs_audit.after_value_string = 'three' AND rep_repairs_audit.field_name = 'status_c' THEN 'Отложено'
+                WHEN rep_repairs_audit.after_value_string = 'four' AND rep_repairs_audit.field_name = 'status_c' THEN 'Выполнена'
+                WHEN rep_repairs_audit.after_value_string = 'five' AND rep_repairs_audit.field_name = 'status_c' THEN 'Отменена'
+#Реплейсы для типа подготовительных работ
+                                WHEN rep_repairs_audit.field_name = 'prepared_equipment_c' THEN
+                                        REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE
+                                        (rep_repairs_audit.after_value_string, '^ao^', 'АО'), '^bs^', 'БС'), '^rrl^', 'РРЛ'), '^switch^', 'Коммутатор'),
+                                        '^router^', 'Роутер'), '^wi_fi^', 'Wi-Fi роутер'), '^tv^', 'ТВ Приставка'), ',', ', ')
+#Реплейсы для типа курирования работ
+                                WHEN rep_repairs_audit.field_name = 'accepting_work_repairs_c' THEN
+                                        REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(
+                                        REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(
+                                        REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(
+                                        REPLACE(REPLACE(REPLACE(REPLACE(rep_repairs_audit.after_value_string, '^conection_fl_cottage^','Подключение ФЛ (Коттедж)'), 
+                                        '^connection_fl_house^', 'Подключение ФЛ (многоквартирный дом)'),
+                                        '^connection_ul^', 'Подключение ЮЛ'),
+                                        '^connection_ul_offices^', 'Подключение ЮЛ (офисный центр)'),
+                                        '^ul^', 'Ремонт ЮЛ'),
+                                        '^fl^', 'Ремонт ФЛ'),
+                                        '^adjustment_as^', 'Юстировка АС'),
+                                        '^adjustment_bs^', 'Юстировка БС'),
+                                        '^adjustment_rrl^', 'Юстировка РРЛ'),
+                                        '^replacement_bs^', 'Замена БС'),
+                                        '^replacement_rrl^', 'Замена РРЛ'),
+                                        '^rebuild_switch^', 'Перенастройка коммутатора'),
+                                        '^rebuild_router^', 'Перенастройка маршрутизатора'),
+                                        '^rebuild_as^', 'Перенастройка АС'),
+                                        '^rebuild_bs^', 'Перенастройка БС'),
+                                        '^rebuild_rrl^', 'Перенастройка РРЛ'),
+                                        '^install_bs^', 'Установка БС'),
+                                        '^install_rrl^', 'Установка РРЛ'),
+                                        '^install_switch^', 'Установка коммутатора'),
+                                        '^replacement_switch^','Замена коммутатора'),
+                                        '^searching_defect^', 'Выявление неисправности'),
+                                        '^survey^', 'Осмотр'),
+                                        '^remoute_rebuild_wi_fi^', 'Удаленная перенастройка wi-fi роутера'),
+                                        ',', ', ')
+                ELSE rep_repairs_audit.after_value_string
+            END,
+            rep_repairs_audit.after_value_text) AS 'Новое значение',
+    GET_USER(rep_repairs_cstm.user_id3_c) AS 'Оборудование подготовил',
+#Реплейсы для типа подготовительных работ
+        REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE
+       (prepared_equipment_c, '^ao^', 'АО'), '^bs^', 'БС'), '^rrl^', 'РРЛ'), '^switch^', 'Коммутатор'),
+                '^router^', 'Роутер'), '^wi_fi^', 'Wi-Fi роутер'), '^tv^', 'ТВ Приставка'), ',', ', ') AS 'Тип подготовленного оборудования',
+#Реплейсы для типа курирования работ
+    REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(
+                REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(
+                REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(
+                REPLACE(REPLACE(REPLACE(REPLACE(accepting_work_repairs_c, '^conection_fl_cottage^','Подключение ФЛ (Коттедж)'), 
+                '^connection_fl_house^', 'Подключение ФЛ (многоквартирный дом)'),
+                '^connection_ul^', 'Подключение ЮЛ'),
+                '^connection_ul_offices^', 'Подключение ЮЛ (офисный центр)'),
+                '^ul^', 'Ремонт ЮЛ'),
+                '^fl^', 'Ремонт ФЛ'),
+                '^adjustment_as^', 'Юстировка АС'),
+                '^adjustment_bs^', 'Юстировка БС'),
+                '^adjustment_rrl^', 'Юстировка РРЛ'),
+                '^replacement_bs^', 'Замена БС'),
+                '^replacement_rrl^', 'Замена РРЛ'),
+                '^rebuild_switch^', 'Перенастройка коммутатора'),
+                '^rebuild_router^', 'Перенастройка маршрутизатора'),
+                '^rebuild_as^', 'Перенастройка АС'),
+                '^rebuild_bs^', 'Перенастройка БС'),
+                '^rebuild_rrl^', 'Перенастройка РРЛ'),
+                '^install_bs^', 'Установка БС'),
+                '^install_rrl^', 'Установка РРЛ'),
+                '^install_switch^', 'Установка коммутатора'),
+                '^replacement_switch^','Замена коммутатора'),
+                '^searching_defect^', 'Выявление неисправности'),
+                '^survey^', 'Осмотр'),
+                '^remoute_rebuild_wi_fi^', 'Удаленная перенастройка wi-fi роутера'),
+                ',', ', ') AS 'Тип курируемых работ'
+FROM
+    rep_repairs
+        JOIN
+    rep_repairs_cstm ON rep_repairs.id = rep_repairs_cstm.id_c
+        AND rep_repairs_cstm.date_of_completion_c >= '2020-02-01'
+        AND rep_repairs_cstm.date_of_completion_c <= '2020-02-29'
+        AND rep_repairs.deleted != '1'
+        LEFT JOIN
+    rep_repairs_bugs_1_c ON rep_repairs.id = rep_repairs_bugs_1_c.rep_repairs_bugs_1rep_repairs_ida
+        LEFT JOIN
+    bugs ON bugs.id = rep_repairs_bugs_1_c.rep_repairs_bugs_1bugs_idb
+        LEFT JOIN
+    rep_repairs_audit ON rep_repairs.id = rep_repairs_audit.parent_id;
+
