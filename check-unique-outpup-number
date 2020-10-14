@@ -1,3 +1,4 @@
+#test
 DELIMITER $$
 CREATE TRIGGER Cheking_unique_number_INSERT
 BEFORE INSERT
