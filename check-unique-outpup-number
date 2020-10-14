@@ -1,0 +1,15 @@
+DELIMITER $$
+CREATE TRIGGER Cheking_unique_number_INSERT
+BEFORE INSERT
+ON `let_letters`
+FOR EACH ROW
+BEGIN
+  SET @cnt = NULL;
+  SELECT COUNT(output_number) INTO @cnt FROM `let_letters`
+    WHERE output_number = new.output_number and deleted = 0 and output_number != "";
+  IF @cnt > 0 THEN
+    SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Error: Сработал триггер, указан не уникальный номер входящего письма';
+  END IF;
+END
+$$
+DELIMITER ;
