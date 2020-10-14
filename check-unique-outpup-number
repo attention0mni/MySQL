@@ -1,5 +1,9 @@
 #test
+<<<<<<< HEAD
 #2
+=======
+#1
+>>>>>>> ef7d05f9dcaefe95e9593f49513b40cff8899986
 DELIMITER $$
 CREATE TRIGGER Cheking_unique_number_INSERT
 BEFORE INSERT
