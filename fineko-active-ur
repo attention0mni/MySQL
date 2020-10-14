@@ -1,0 +1,30 @@
+USE sugar;
+SELECT DISTINCT
+    (opportunities_cstm.code_fineko_c) as 'Финеко',
+    opportunities.name as 'Договор',
+    accounts.name as 'Название',
+    accounts.phone_office as 'Телефон 1',
+    accounts.phone_alternate as 'Телефон 2',
+    email_addresses.email_address as 'E-Mail'
+FROM
+    accounts
+        LEFT JOIN
+    email_addr_bean_rel ON accounts.id = email_addr_bean_rel.bean_id
+        AND email_addr_bean_rel.primary_address = '1'
+        AND email_addr_bean_rel.deleted = '0'
+        LEFT JOIN
+    email_addresses ON email_addresses.id = email_addr_bean_rel.email_address_id
+        JOIN
+    accounts_opportunities ON accounts_opportunities.account_id = accounts.id
+        JOIN
+    opportunities_cstm ON opportunities_cstm.id_c = accounts_opportunities.opportunity_id
+        AND opportunities_cstm.closed_opp_c = '0'
+        JOIN
+    opportunities ON opportunities.id = opportunities_cstm.id_c
+        AND opportunities.deleted = '0'
+        JOIN
+    accounts_cstm ON accounts_cstm.id_c = accounts.id
+        AND accounts_cstm.company_acc_c = '1'
+        AND accounts_cstm.status_acc_c = 'active'
+        AND accounts.deleted = '0'
+ORDER BY accounts.name ASC;
