@@ -1,0 +1,11 @@
+SELECT 
+    COUNT(*) AS 'Количество подключений',
+    DATE_FORMAT(date_entered, '%Y-%m-%d') AS 'День'
+#    DATE_FORMAT(date_entered, '%W') AS 'День недели'
+FROM
+    con_p_connections_plan
+WHERE
+    DATE_FORMAT(date_entered, '%Y-%m-%d') >= CURDATE() - INTERVAL 7 DAY
+        AND DATE_FORMAT(date_entered, '%Y-%m-%d') <= CURDATE() + INTERVAL 7 DAY
+        AND deleted != '1'
+GROUP BY DATE_FORMAT(date_entered, '%Y-%m-%d');
